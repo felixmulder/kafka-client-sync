@@ -1,7 +1,7 @@
 name:
   kafka-client-sync
 version:
-  0.1.0.0
+  0.1.0.1
 synopsis:
   Synchronous Kafka Client
 description:
