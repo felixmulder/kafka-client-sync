@@ -15,20 +15,34 @@ module Kafka.Producer.Sync
   , produceRecord
 
     -- * Re-exports
-  , KafkaError(..)
-  , ProducePartition(..)
-  , ProducerProperties(..)
-  , KP.brokersList
-  , KP.logLevel
-  , KP.compression
-  , KP.topicCompression
-  , KP.sendTimeout
-  , KP.extraProps
-  , KP.suppressDisconnectLogs
-  , KP.extraTopicProps
-  , KP.debugOptions
+
+    -- ** Record datatypes
   , ProducerRecord(..)
   , TopicName(..)
+  , ProducePartition(..)
+
+    -- ** Errors
+  , KafkaError(..)
+
+    -- ** Producer configuration
+  , ProducerProperties(..)
+    -- ** Configuration helpers
+  , KP.brokersList            -- | Set brokers for producer
+  , KP.logLevel               -- | Set log-level for producer
+  , KP.compression            -- | Set compression level for producer
+  , KP.topicCompression       -- | Set topic compression for producer
+  , KP.sendTimeout            -- | Set send timeout for producer
+  , KP.extraProps             -- | Set extra properties for producer
+  , KP.suppressDisconnectLogs -- | Suppress disconnect log lines
+  , KP.extraTopicProps        -- | Configure extra topic properties
+  , KP.debugOptions           -- | Add 'KafkaDebug' options
+
+    -- ** Other datatypes
+  , BrokerAddress(..)
+  , KafkaCompressionCodec(..)
+  , KafkaDebug(..)
+  , KafkaLogLevel(..)
+  , Timeout(..)
   )
   where
 
@@ -46,9 +60,10 @@ import           Kafka.Producer.ProducerProperties (ProducerProperties(..))
 import qualified Kafka.Producer.ProducerProperties as KP (brokersList, logLevel, compression, topicCompression)
 import qualified Kafka.Producer.ProducerProperties as KP (sendTimeout, extraProps, suppressDisconnectLogs)
 import qualified Kafka.Producer.ProducerProperties as KP (extraTopicProps, debugOptions)
-import           Kafka.Producer.Types (KafkaProducer, ProducerRecord(..), DeliveryReport(..))
-import           Kafka.Producer.Types (ProducePartition(..))
-import           Kafka.Types (KafkaError(..), TopicName(..))
+import           Kafka.Producer.Types (KafkaProducer, ProducerRecord(..))
+import           Kafka.Producer.Types (DeliveryReport(..), ProducePartition(..))
+import           Kafka.Types (KafkaLogLevel(..), KafkaError(..), TopicName(..), Timeout(..))
+import           Kafka.Types (KafkaDebug(..), BrokerAddress(..), KafkaCompressionCodec(..))
 
 produceRecord :: MonadIO m => SyncKafkaProducer -> ProducerRecord -> m (Either KafkaError ())
 produceRecord syncProducer record =
@@ -72,7 +87,7 @@ data Requests = Requests
   { pending :: Seq (ResultVar, ProducerRecord)
     -- ^ This sequence contains records that are effectively equal to something
     --   that is already being sent. In order for us not to have ambiguities on
-    --   what 'MVar' to resolve on 'DeliverReport's - this separation is needed.
+    --   what 'MVar' to resolve on 'DeliveryReport's - this separation is needed.
     --
     --   When a sent record has it's 'ResultVar' resolved, an effectively equal
     --   record is removed from this @pending@ queue and produced via the
