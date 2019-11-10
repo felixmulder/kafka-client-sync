@@ -9,7 +9,7 @@
 --   pending request should be sent first.
 --
 module Kafka.Producer.Sync
-  ( -- * Functions and datatypes for managing synchronous Kafka producers
+  ( -- * Sync producer
     SyncKafkaProducer
   , newSyncProducer
   , produceRecord

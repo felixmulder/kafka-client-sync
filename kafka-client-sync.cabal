@@ -47,7 +47,7 @@ library
   build-depends:
       base                      >= 4.9      && < 5
     , containers                >= 0.6      && < 0.7
-    , hw-kafka-client           >= 3.0      && < 3.1
+    , hw-kafka-client           >= 2.6      && < 3.1
 
   hs-source-dirs:
     src
@@ -83,6 +83,6 @@ test-suite kafka-client-sync-tests
       kafka-client-sync
 
     , base                      >= 4.9      && < 5
-    , hw-kafka-client           >= 3.0      && < 3.1
+    , hw-kafka-client           >= 2.6      && < 3.1
     , monad-parallel            >= 0.7      && < 0.8
     , text                      >= 1.2      && < 1.3
