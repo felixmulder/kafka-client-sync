@@ -16,8 +16,18 @@ module Kafka.Producer.Sync
 
     -- * Re-exports
   , KafkaError(..)
-  , ProducerRecord(..)
   , ProducePartition(..)
+  , ProducerProperties(..)
+  , KP.brokersList
+  , KP.logLevel
+  , KP.compression
+  , KP.topicCompression
+  , KP.sendTimeout
+  , KP.extraProps
+  , KP.suppressDisconnectLogs
+  , KP.extraTopicProps
+  , KP.debugOptions
+  , ProducerRecord(..)
   , TopicName(..)
   )
   where
@@ -32,7 +42,10 @@ import           Data.Maybe (isJust)
 import           Data.Sequence (Seq(..), (<|), (|>))
 import qualified Kafka.Producer as KP (deliveryCallback, flushProducer, newProducer)
 import qualified Kafka.Producer as KP (produceMessage, setCallback)
-import           Kafka.Producer.ProducerProperties (ProducerProperties)
+import           Kafka.Producer.ProducerProperties (ProducerProperties(..))
+import qualified Kafka.Producer.ProducerProperties as KP (brokersList, logLevel, compression, topicCompression)
+import qualified Kafka.Producer.ProducerProperties as KP (sendTimeout, extraProps, suppressDisconnectLogs)
+import qualified Kafka.Producer.ProducerProperties as KP (extraTopicProps, debugOptions)
 import           Kafka.Producer.Types (KafkaProducer, ProducerRecord(..), DeliveryReport(..))
 import           Kafka.Producer.Types (ProducePartition(..))
 import           Kafka.Types (KafkaError(..), TopicName(..))
