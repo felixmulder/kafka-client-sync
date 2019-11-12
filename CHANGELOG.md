@@ -1,4 +1,8 @@
-# Revision history for hedgehog-servant
+# Revision history for kafka-client-sync
+
+## 0.1.1.0 -- 2019-11-12
+
+* Add `closeSyncProducer` function
 
 ## 0.1.0.1 -- 2019-11-10
 

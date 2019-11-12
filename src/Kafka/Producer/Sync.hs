@@ -12,6 +12,7 @@ module Kafka.Producer.Sync
   ( -- * Sync producer
     SyncKafkaProducer
   , newSyncProducer
+  , closeSyncProducer
   , produceRecord
 
     -- * Re-exports
@@ -55,7 +56,7 @@ import           Data.Functor ((<&>))
 import           Data.Maybe (isJust)
 import           Data.Sequence (Seq(..), (<|), (|>))
 import qualified Kafka.Producer as KP (deliveryCallback, flushProducer, newProducer)
-import qualified Kafka.Producer as KP (produceMessage, setCallback)
+import qualified Kafka.Producer as KP (closeProducer, produceMessage, setCallback)
 import           Kafka.Producer.ProducerProperties (ProducerProperties(..))
 import qualified Kafka.Producer.ProducerProperties as KP (brokersList, logLevel, compression, topicCompression)
 import qualified Kafka.Producer.ProducerProperties as KP (sendTimeout, extraProps, suppressDisconnectLogs)
@@ -124,6 +125,12 @@ newSyncProducer props = liftIO $ do
       KP.newProducer $ props <> KP.setCallback (KP.deliveryCallback callbackAction)
 
   producer <&> fmap (SyncKafkaProducer reqs)
+
+-- | Close the producer
+--
+--   After invoking this function, the producer should not be used anymore
+closeSyncProducer :: MonadIO m => SyncKafkaProducer -> m ()
+closeSyncProducer SyncKafkaProducer{..} = KP.closeProducer producer
 
 -- | Sends one pending producer record
 --

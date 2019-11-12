@@ -2,6 +2,7 @@ module Main (main) where
 
 import           Prelude hiding (sequence)
 
+import           Control.Exception (throw, bracket)
 import           Control.Monad (when)
 import           Control.Monad.Parallel (sequence)
 import           Data.Foldable (for_)
@@ -9,7 +10,6 @@ import           Data.Either (isLeft)
 import           Data.Text (pack)
 import           Data.Text.Encoding (encodeUtf8)
 import           Kafka.Producer.Sync
-import           Kafka.Producer
 
 producerProps :: ProducerProperties
 producerProps = brokersList [BrokerAddress "localhost:9092"]
@@ -24,23 +24,32 @@ message suffix = ProducerRecord
   , prValue = Just . encodeUtf8 . pack . show $ suffix
   }
 
+withProducer :: (SyncKafkaProducer -> IO ()) -> IO ()
+withProducer action =
+  let
+    newProducerOrThrow = newSyncProducer producerProps >>= \case
+      Left err ->
+        throw . userError $ "Couldn't start producer: " <> show err
+      Right producer ->
+        pure producer
+  in
+    bracket newProducerOrThrow closeSyncProducer action
+
 main :: IO ()
 main =
-  newSyncProducer producerProps >>= \case
-    Left _ -> error "Couldn't create sync producer"
-    Right producer -> do
-      putStrLn "Running Kafka sync tests"
+  withProducer $ \producer -> do
+    putStrLn "Running Kafka sync tests"
 
-      let action = produceRecord producer . message
-      res <- sequence $
-        fmap action [1..100] ++
-        fmap action (replicate 1 100)
+    let action = produceRecord producer . message
+    res <- sequence $
+      fmap action [1..100] ++
+      fmap action (replicate 1 100)
 
-      for_ res $
-        either (putStrLn . (<>) "got error: " . show) pure
+    for_ res $
+      either (putStrLn . (<>) "got error: " . show) pure
 
-      when
-        (any isLeft res)
-        (error "Couldn't publish messages in parallel")
+    when
+      (any isLeft res)
+      (throw . userError $ "Couldn't publish messages in parallel")
 
-      putStrLn "Successfully published messages"
+    putStrLn "Successfully published messages"
