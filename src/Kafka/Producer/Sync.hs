@@ -66,6 +66,8 @@ import           Kafka.Producer.Types (DeliveryReport(..), ProducePartition(..))
 import           Kafka.Types (KafkaLogLevel(..), KafkaError(..), TopicName(..), Timeout(..))
 import           Kafka.Types (KafkaDebug(..), BrokerAddress(..), KafkaCompressionCodec(..))
 
+-- | Synchronously produce a record using the specified producer
+--
 produceRecord :: MonadIO m => SyncKafkaProducer -> ProducerRecord -> m (Either KafkaError ())
 produceRecord syncProducer record =
   -- Produce our message synchronously, then send pending:
@@ -73,6 +75,10 @@ produceRecord syncProducer record =
 
 
 -- | A producer for sending messages to Kafka and waiting for the 'DeliveryReport'
+--
+--   A single producer may be used for the entire application. The underlying
+--   library, @librdkafka@, deals very well with concurrent use - this
+--   implementation supports that as well.
 --
 data SyncKafkaProducer = SyncKafkaProducer
   { requests :: MVar Requests
@@ -126,9 +132,13 @@ newSyncProducer props = liftIO $ do
 
   producer <&> fmap (SyncKafkaProducer reqs)
 
--- | Close the producer
+-- | Close the 'SyncKafkaProducer'
 --
 --   After invoking this function, the producer should not be used anymore
+--
+--   Ideally, you would use 'Control.Exception.bracket' in order to make sure
+--   that a producer is not re-used once closed.
+--
 closeSyncProducer :: MonadIO m => SyncKafkaProducer -> m ()
 closeSyncProducer SyncKafkaProducer{..} = KP.closeProducer producer
 
