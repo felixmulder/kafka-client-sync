@@ -49,7 +49,9 @@ module Kafka.Producer.Sync
 
 import           Prelude
 
+import           Control.Concurrent (forkIO)
 import           Control.Concurrent.MVar (MVar, newMVar, takeMVar, newEmptyMVar, putMVar)
+import           Control.Monad (void)
 import           Control.Monad.IO.Class (MonadIO(..))
 import           Data.Foldable (find)
 import           Data.Functor ((<&>))
@@ -186,7 +188,7 @@ hasEffectivelyEqual record
 
 handleDeliveryReport :: MVar Requests -> (DeliveryReport -> IO ())
 handleDeliveryReport mvarRequests = \case
-  DeliverySuccess record _offset -> do
+  DeliverySuccess record _offset -> void . forkIO $ do
     reqs <- takeMVar mvarRequests
     case getAndRemove record (sent reqs) of
       Just (mvar, rest) -> do
@@ -196,7 +198,7 @@ handleDeliveryReport mvarRequests = \case
         error
           $ "Illegal state ocurred, record was not in sent: "
           <> show reqs
-  DeliveryFailure record err -> do
+  DeliveryFailure record err -> void . forkIO $ do
     reqs <- takeMVar mvarRequests
     case getAndRemove record (sent reqs) of
       Just (mvar, rest) -> do

@@ -13,7 +13,7 @@ import           Kafka.Producer.Sync
 
 producerProps :: ProducerProperties
 producerProps = brokersList [BrokerAddress "localhost:9092"]
-  <> sendTimeout (Timeout 10000)
+  <> sendTimeout (Timeout 1000)
   <> logLevel KafkaLogDebug
 
 message :: Int -> ProducerRecord
@@ -41,9 +41,17 @@ main =
     putStrLn "Running Kafka sync tests"
 
     let action = produceRecord producer . message
+
+    -- Produces 15k messages and waits for them all to be delivered to the
+    -- broker
     res <- sequence $
-      fmap action [1..100] ++
-      fmap action (replicate 1 100)
+      fmap action [1..10000] ++
+      fmap action (replicate 1 1000) ++
+      fmap action (replicate 2 1000) ++
+      fmap action (replicate 3 1000) ++
+      fmap action (replicate 4 1000) ++
+      fmap action (replicate 5 1000) ++
+      []
 
     for_ res $
       either (putStrLn . (<>) "got error: " . show) pure

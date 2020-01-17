@@ -66,7 +66,13 @@ test-suite kafka-client-sync-tests
     Main.hs
 
   ghc-options:
-    -Wall -Wredundant-constraints -fhide-source-paths -threaded
+    -Wall
+    -Wredundant-constraints
+    -fhide-source-paths
+    -threaded
+    -with-rtsopts=-N
+    -with-rtsopts=-qg
+    -O2
 
   hs-source-dirs:
     test
