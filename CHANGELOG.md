@@ -1,5 +1,9 @@
 # Revision history for kafka-client-sync
 
+## 0.1.1.1 -- 2020-01-17
+
+* Fix concurrency issue causing deadlock in callback handler
+
 ## 0.1.1.0 -- 2019-11-12
 
 * Add `closeSyncProducer` function
